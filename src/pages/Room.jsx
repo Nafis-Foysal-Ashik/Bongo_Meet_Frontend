@@ -8,6 +8,7 @@ import {
   ComputerDesktopIcon,
   HandRaisedIcon,
   PhoneXMarkIcon,
+  UsersIcon
 } from "@heroicons/react/24/solid";
 
 function Room() {
@@ -20,11 +21,12 @@ function Room() {
   const [isAudioOn, setIsAudioOn] = useState(true);
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [isHandRaised, setIsHandRaised] = useState(false);
+  const [participantsCount, setParticipantsCount] = useState(1);
+
 
   const { roomId } = useParams();
   const navigate = useNavigate();
 
-  /* 🎥 Get camera & microphone */
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
@@ -35,14 +37,13 @@ function Room() {
           videoRef.current.srcObject = mediaStream;
         }
 
-        // Sync initial states
+        
         setIsAudioOn(mediaStream.getAudioTracks()[0]?.enabled ?? true);
         setIsVideoOn(mediaStream.getVideoTracks()[0]?.enabled ?? true);
       })
       .catch(() => toast.error("Camera or microphone access denied"));
   }, []);
 
-  /* 🎤 Toggle Audio */
   const toggleAudio = () => {
     if (!stream) return;
 
@@ -53,11 +54,10 @@ function Room() {
     setIsAudioOn(track.enabled);
 
     toast.success(
-      track.enabled ? "Microphone unmuted 🎤" : "Microphone muted 🔇"
+      track.enabled ? "Microphone unmuted" : "Microphone muted"
     );
   };
 
-  /* 📷 Toggle Video */
   const toggleVideo = () => {
     if (!stream) return;
 
@@ -68,25 +68,22 @@ function Room() {
     setIsVideoOn(track.enabled);
 
     toast(
-      track.enabled ? "Camera turned on 📷" : "Camera turned off 🚫",
+      track.enabled ? "Camera turned on" : "Camera turned off",
       { icon: track.enabled ? "📷" : "🚫" }
     );
   };
 
-  /* ✋ Hand Raise */
   const toggleHandRaise = () => {
     setIsHandRaised((prev) => !prev);
-    toast(isHandRaised ? "Hand lowered 👇" : "Hand raised ✋");
+    toast(isHandRaised ? "Hand lowered" : "Hand raised");
   };
 
-  /* 🔗 Share Link */
   const shareLink = () => {
     const link = `${window.location.origin}/room/${roomId}`;
     navigator.clipboard.writeText(link);
-    toast.success("Meeting link copied 📋");
+    toast.success("Meeting link copied");
   };
 
-  /* 🖥️ Screen Share */
   const startScreenShare = async () => {
     try {
       const displayStream = await navigator.mediaDevices.getDisplayMedia({
@@ -99,13 +96,12 @@ function Room() {
         screenVideoRef.current.srcObject = displayStream;
       }
 
-      toast.success("Screen sharing started 🖥️");
+      toast.success("Screen sharing started");
     } catch {
       toast.error("Screen sharing cancelled");
     }
   };
 
-  /* ⛔ Leave Meeting */
   const leaveMeeting = () => {
     toast.error("You left the meeting");
 
@@ -117,7 +113,6 @@ function Room() {
 
   return (
     <div className="h-screen bg-black text-white flex flex-col">
-      {/* 🎥 VIDEO AREA */}
       <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
         <video
           ref={videoRef}
@@ -137,7 +132,6 @@ function Room() {
         )}
       </div>
 
-      {/* 🎛️ BOTTOM CONTROL BAR */}
       <div className="h-20 bg-gradient-to-r from-zinc-900 to-zinc-800 flex items-center justify-center gap-6">
         <IconButton onClick={toggleAudio} danger={!isAudioOn}>
           <MicrophoneIcon className="h-6 w-6" />
@@ -159,6 +153,18 @@ function Room() {
           <HandRaisedIcon className="h-6 w-6" />
         </IconButton>
 
+        <IconButton>
+  <div className="relative flex items-center justify-center">
+    <UsersIcon className="h-6 w-6" />
+
+    {/* Count Badge */}
+    <span className="absolute -top-1 -right-2 bg-blue-600 text-xs px-1.5 py-0.5 rounded-full">
+      {participantsCount}
+    </span>
+  </div>
+</IconButton>
+
+        
         <button
           onClick={leaveMeeting}
           className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-5 py-2 rounded-full font-medium transition-all duration-200 hover:scale-105 active:scale-95"
@@ -171,7 +177,6 @@ function Room() {
   );
 }
 
-/* 🔹 Reusable Icon Button */
 function IconButton({ children, onClick, danger, active }) {
   return (
     <button
@@ -187,7 +192,6 @@ function IconButton({ children, onClick, danger, active }) {
     >
       {children}
 
-      {/* Red slash indicator */}
       {danger && (
         <span className="absolute w-8 h-[2px] bg-white rotate-45" />
       )}
