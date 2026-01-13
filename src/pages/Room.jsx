@@ -1,89 +1,130 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import {
+  MicrophoneIcon,
+  VideoCameraIcon,
+  LinkIcon,
+  ComputerDesktopIcon,
+  HandRaisedIcon,
+  PhoneXMarkIcon,
+} from "@heroicons/react/24/solid";
 
 function Room() {
   const videoRef = useRef(null);
   const screenVideoRef = useRef(null);
+
   const [stream, setStream] = useState(null);
   const [screenStream, setScreenStream] = useState(null);
-  const [handRaised, setHandRaised] = useState(false);
+
+  const [isAudioOn, setIsAudioOn] = useState(true);
+  const [isVideoOn, setIsVideoOn] = useState(true);
+  const [isHandRaised, setIsHandRaised] = useState(false);
 
   const { roomId } = useParams();
   const navigate = useNavigate();
 
-  // Get camera & microphone
+  /* 🎥 Get camera & microphone */
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((mediaStream) => {
         setStream(mediaStream);
+
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
         }
+
+        // Sync initial states
+        setIsAudioOn(mediaStream.getAudioTracks()[0]?.enabled ?? true);
+        setIsVideoOn(mediaStream.getVideoTracks()[0]?.enabled ?? true);
       })
-      .catch((err) => {
-        console.error("Media error:", err);
-      });
+      .catch(() => toast.error("Camera or microphone access denied"));
   }, []);
 
-  // Toggle microphone
+  /* 🎤 Toggle Audio */
   const toggleAudio = () => {
     if (!stream) return;
-    stream.getAudioTracks()[0].enabled =
-      !stream.getAudioTracks()[0].enabled;
+
+    const track = stream.getAudioTracks()[0];
+    if (!track) return;
+
+    track.enabled = !track.enabled;
+    setIsAudioOn(track.enabled);
+
+    toast.success(
+      track.enabled ? "Microphone unmuted 🎤" : "Microphone muted 🔇"
+    );
   };
 
-  // Toggle camera
+  /* 📷 Toggle Video */
   const toggleVideo = () => {
     if (!stream) return;
-    stream.getVideoTracks()[0].enabled =
-      !stream.getVideoTracks()[0].enabled;
+
+    const track = stream.getVideoTracks()[0];
+    if (!track) return;
+
+    track.enabled = !track.enabled;
+    setIsVideoOn(track.enabled);
+
+    toast(
+      track.enabled ? "Camera turned on 📷" : "Camera turned off 🚫",
+      { icon: track.enabled ? "📷" : "🚫" }
+    );
   };
 
-  // Share meeting link
+  /* ✋ Hand Raise */
+  const toggleHandRaise = () => {
+    setIsHandRaised((prev) => !prev);
+    toast(isHandRaised ? "Hand lowered 👇" : "Hand raised ✋");
+  };
+
+  /* 🔗 Share Link */
   const shareLink = () => {
     const link = `${window.location.origin}/room/${roomId}`;
     navigator.clipboard.writeText(link);
-    alert("Meeting link copied!");
+    toast.success("Meeting link copied 📋");
   };
 
-  // Screen sharing
+  /* 🖥️ Screen Share */
   const startScreenShare = async () => {
     try {
       const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
       });
+
       setScreenStream(displayStream);
+
       if (screenVideoRef.current) {
         screenVideoRef.current.srcObject = displayStream;
       }
-    } catch (err) {
-      console.error("Screen share error:", err);
+
+      toast.success("Screen sharing started 🖥️");
+    } catch {
+      toast.error("Screen sharing cancelled");
     }
   };
 
-  // Raise hand
-  const toggleHandRaise = () => {
-    setHandRaised(!handRaised);
-  };
-
-  // Leave meeting
+  /* ⛔ Leave Meeting */
   const leaveMeeting = () => {
-    stream?.getTracks().forEach((track) => track.stop());
-    screenStream?.getTracks().forEach((track) => track.stop());
-    navigate("/");
+    toast.error("You left the meeting");
+
+    stream?.getTracks().forEach((t) => t.stop());
+    screenStream?.getTracks().forEach((t) => t.stop());
+
+    setTimeout(() => navigate("/"), 700);
   };
 
   return (
-    <div style={{ height: "100vh", background: "#000", color: "#fff" }}>
-      {/* Video Area */}
-      <div style={{ textAlign: "center", paddingTop: "20px" }}>
+    <div className="h-screen bg-black text-white flex flex-col">
+      {/* 🎥 VIDEO AREA */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
         <video
           ref={videoRef}
           autoPlay
-          playsInline
           muted
-          style={{ width: "60%", borderRadius: "10px" }}
+          playsInline
+          className="w-full max-w-4xl rounded-xl object-cover"
         />
 
         {screenStream && (
@@ -91,43 +132,66 @@ function Room() {
             ref={screenVideoRef}
             autoPlay
             playsInline
-            style={{
-              width: "60%",
-              marginTop: "10px",
-              borderRadius: "10px",
-            }}
+            className="w-full max-w-4xl rounded-xl border border-gray-700"
           />
         )}
       </div>
 
-      {/* Bottom Control Bar */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          width: "100%",
-          background: "#1f1f1f",
-          display: "flex",
-          justifyContent: "center",
-          gap: "15px",
-          padding: "15px",
-        }}
-      >
-        <button onClick={toggleAudio}>🎤</button>
-        <button onClick={toggleVideo}>📷</button>
-        <button onClick={shareLink}>🔗</button>
-        <button onClick={startScreenShare}>🖥️</button>
-        <button onClick={toggleHandRaise}>
-          ✋ {handRaised ? "Lower" : "Raise"}
-        </button>
+      {/* 🎛️ BOTTOM CONTROL BAR */}
+      <div className="h-20 bg-gradient-to-r from-zinc-900 to-zinc-800 flex items-center justify-center gap-6">
+        <IconButton onClick={toggleAudio} danger={!isAudioOn}>
+          <MicrophoneIcon className="h-6 w-6" />
+        </IconButton>
+
+        <IconButton onClick={toggleVideo} danger={!isVideoOn}>
+          <VideoCameraIcon className="h-6 w-6" />
+        </IconButton>
+
+        <IconButton onClick={shareLink}>
+          <LinkIcon className="h-6 w-6" />
+        </IconButton>
+
+        <IconButton onClick={startScreenShare}>
+          <ComputerDesktopIcon className="h-6 w-6" />
+        </IconButton>
+
+        <IconButton onClick={toggleHandRaise} active={isHandRaised}>
+          <HandRaisedIcon className="h-6 w-6" />
+        </IconButton>
+
         <button
           onClick={leaveMeeting}
-          style={{ background: "red", color: "white" }}
+          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-5 py-2 rounded-full font-medium transition-all duration-200 hover:scale-105 active:scale-95"
         >
-          ⛔ Leave
+          <PhoneXMarkIcon className="h-5 w-5" />
+          Leave
         </button>
       </div>
     </div>
+  );
+}
+
+/* 🔹 Reusable Icon Button */
+function IconButton({ children, onClick, danger, active }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        relative h-12 w-12 rounded-full
+        flex items-center justify-center
+        transition-all duration-200
+        ${danger ? "bg-red-600 hover:bg-red-700" : "bg-zinc-800 hover:bg-zinc-700"}
+        ${active ? "ring-2 ring-yellow-400" : ""}
+        hover:scale-110 active:scale-95
+      `}
+    >
+      {children}
+
+      {/* Red slash indicator */}
+      {danger && (
+        <span className="absolute w-8 h-[2px] bg-white rotate-45" />
+      )}
+    </button>
   );
 }
 
