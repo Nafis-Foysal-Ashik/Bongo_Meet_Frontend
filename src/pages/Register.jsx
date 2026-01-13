@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 function Register() {
   const navigate = useNavigate();
@@ -11,10 +12,33 @@ function Register() {
   const handleRegister = (e) => {
     e.preventDefault();
 
-    // For now just console log (backend later)
+    if (!name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+
+    if (!email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+
+    if (!password.trim()) {
+      toast.error("Password is required");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    // ✅ If everything is valid
+    toast.success("Registration successful");
+
+    // Later: send data to backend
     console.log({ name, email, password });
 
-    // Example redirect after register
+    // Optional redirect
     // navigate("/login");
   };
 
@@ -22,7 +46,7 @@ function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
         <h2 className="text-2xl font-semibold text-center mb-6">
-          Create your account
+          Create your Bongo Meeting account
         </h2>
 
         <form onSubmit={handleRegister} className="space-y-4">
@@ -32,8 +56,7 @@ function Register() {
             placeholder="Full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border  focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           {/* Email */}
@@ -42,8 +65,7 @@ function Register() {
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border  focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           {/* Password */}
@@ -52,14 +74,13 @@ function Register() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border  focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           {/* Register Button */}
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
+            className="w-full bg-sky-500 hover:bg-black text-white py-3 font-medium transition"
           >
             Register
           </button>
