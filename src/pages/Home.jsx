@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link , useNavigate } from "react-router-dom";
 
 function Home() {
   const navigate = useNavigate();
@@ -7,7 +7,6 @@ function Home() {
   const [showOptions, setShowOptions] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Update time every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -54,14 +53,17 @@ function Home() {
       {/* 🔹 TOP NAVBAR */}
       <div className="h-16 px-6 flex items-center justify-between border-b">
         {/* Left Logo */}
-        <div className="flex cursor-pointer items-center gap-2">
-          <img onClick={() => navigate('/')}
-            src="https://img.freepik.com/premium-vector/m-letter-meeting-logo-template_1193009-58.jpg"
-            alt="Meeting Logo"
-            className="h-10 w-10 object-contain"
-          />
-          <span className="font-semibold text-lg">Bongo Meet</span>
-        </div>
+        <Link 
+  to="/" 
+  className="flex items-center gap-2 cursor-pointer no-underline text-inherit"
+>
+  <img 
+    src="https://img.freepik.com/premium-vector/m-letter-meeting-logo-template_1193009-58.jpg"
+    alt="Meeting Logo"
+    className="h-10 w-10 object-contain"
+  />
+  <span className="font-semibold text-lg text-black">Bongo Meet</span>
+</Link>
 
         {/* Center Time & Date */}
         <div className="text-gray-600 text-sm md:text-base">
@@ -80,7 +82,7 @@ function Home() {
       <div className="flex items-center justify-center px-10 h-[calc(100vh-4rem)]">
 
         <div className="max-w-7xl w-full grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          
+
           {/* Left Section */}
           <div>
             <h1 className="text-4xl md:text-5xl font-medium mb-6">
@@ -103,32 +105,27 @@ function Home() {
 
               {/* Dropdown */}
               <div
-  className={`
-    absolute top-14 left-0 w-64 bg-white border rounded-lg shadow-lg z-10
-    transform transition-all duration-200 ease-out
-    ${showOptions ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"}
-  `}
->
-  <button
-    onClick={createInstantMeeting}
-    className="w-full text-left px-4 py-3 hover:bg-gray-100"
-  >
-    🚀 Create an instant meeting
-  </button>
-  <hr />
-  <button
-    onClick={createMeetingForLater}
-    className="w-full text-left px-4 py-3 hover:bg-gray-100"
-  >
-    📅 Create a meeting for later
-  </button>
-</div>
+                className={`absolute top-14 left-0 w-64 bg-white border rounded-lg shadow-lg z-10 transform transition-all duration-200 ease-out
+                ${showOptions ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"}`}
+              >
+                <button
+                  onClick={createInstantMeeting}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100"
+                >
+                  Create an instant meeting
+                </button>
+                <hr />
+                <button
+                  onClick={createMeetingForLater}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100"
+                >
+                  Create a meeting for later
+                </button>
+              </div>
 
-
-              {/* Join Meeting */}
               <input
                 type="text"
-                placeholder="Enter a code or link"
+                placeholder="Enter a meeting ID or link"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value)}
                 className="border border-gray-300 px-4 py-3 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -143,7 +140,7 @@ function Home() {
             </div>
           </div>
 
-          {/* Right Section */}
+          
           <div className="flex justify-center">
             <div className="w-72 h-72 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
               <img src="https://media.tenor.com/ACwD8kk3y1YAAAAm/meeting-time-meeting.webp" alt="" />
