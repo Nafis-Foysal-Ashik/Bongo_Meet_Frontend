@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 function Register() {
@@ -9,38 +10,56 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleRegister = (e) => {
-    e.preventDefault();
+  const handleRegister = async (e) => {
+  e.preventDefault();
 
-    if (!name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
+  // Frontend validation
+  if (!name.trim()) {
+    toast.error("Name is required");
+    return;
+  }
 
-    if (!email.trim()) {
-      toast.error("Email is required");
-      return;
-    }
+  if (!email.trim()) {
+    toast.error("Email is required");
+    return;
+  }
 
-    if (!password.trim()) {
-      toast.error("Password is required");
-      return;
-    }
+  if (!password.trim()) {
+    toast.error("Password is required");
+    return;
+  }
 
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
+  if (password.length < 6) {
+    toast.error("Password must be at least 6 characters");
+    return;
+  }
 
-    // ✅ If everything is valid
-    toast.success("Registration successful");
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/api/auth/register",
+      {
+        name,
+        email,
+        password,
+      }
+    );
 
-    // Later: send data to backend
-    console.log({ name, email, password });
+    toast.success(res.data.message);
+
+    // Clear form
+    setName("");
+    setEmail("");
+    setPassword("");
 
     // Optional redirect
     // navigate("/login");
-  };
+  } catch (error) {
+    toast.error(
+      error.response?.data?.message || "Registration failed"
+    );
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

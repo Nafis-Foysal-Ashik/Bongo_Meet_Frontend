@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 function Login() {
   const navigate = useNavigate();
@@ -8,10 +9,10 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // ❌ Basic validation
+    // ❌ Frontend validation
     if (!email.trim()) {
       toast.error("Email is required");
       return;
@@ -22,13 +23,29 @@ function Login() {
       return;
     }
 
-    // ✅ Temporary success (backend later)
-    toast.success("Login successful");
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
-    console.log({ email, password });
+      // ✅ If login successful
+      toast.success(res.data.message || "Login successful");
 
-    // Example redirect after login
-    // navigate("/");
+      // (Optional) store user info for later use
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      // Redirect to homepage
+      navigate("/");
+    } catch (error) {
+      // ❌ If login fails
+      toast.error(
+        error.response?.data?.message || "Invalid email or password"
+      );
+    }
   };
 
   return (
